@@ -1,0 +1,44 @@
+name: CI
+on:
+  pull_request:
+
+jobs:
+  # test:
+  #   runs-on: ubuntu-latest
+  #   container: oryd/sdk:v0.0.53
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   strategy:
+  #     matrix:
+  #       language:
+  #         [
+  #           "elixir",
+  #           "typescript",
+  #           "rust",
+  #           "golang",
+  #           "java",
+  #           "php",
+  #           "python",
+  #           "dotnet",
+  #           "dart",
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Generate and Test - ${{ matrix.language }}
+  #       uses: ./.github/actions/generate-and-test
+  #       with:
+  #         language: ${{ matrix.language }}
+  test-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Ruby 2.7
+        uses: ruby/setup-ruby@ec02537da5712d66d4d50a0f33b7eb52773b5ed1
+        with:
+          ruby-version: 2.7
+      - uses: actions/checkout@v4
+      - run: ls -la .
+      - name: Generate and Test
+        uses: ./.github/actions/generate-and-test
+        with:
+          language: ruby

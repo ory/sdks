@@ -2,17 +2,18 @@
 
 set -Eeuxo pipefail
 
-cd "$( dirname "${BASH_SOURCE[0]}" )/.."
+init() {
+  cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-source scripts/prep.sh
+  source scripts/prep.sh
 
-rm -rf config/client/*.proc.yml
+  rm -rf config/client/*.proc.yml
 
-for f in config/client/*
-do
-  echo "Processing $f..."
-  envsubst < "${f}" > "${f}.proc.yml"
-done
+  for f in config/client/*; do
+    echo "Processing $f..."
+    envsubst <"${f}" >"${f}.proc.yml"
+  done
+}
 
 cleanup() {
   rm "clients/${PROJECT}/java/git_push.sh" || true
@@ -34,7 +35,7 @@ cleanup() {
   rm "clients/${PROJECT}/rust/.travis.yml" || true
 }
 
-typescript () {
+typescript() {
   echo "Generating TypeScript..."
 
   dir="clients/${PROJECT}/typescript"
@@ -175,7 +176,7 @@ php() {
   cp "LICENSE" "clients/${PROJECT}/php"
 }
 
-python () {
+python() {
   echo "Generating Python..."
 
   dir="clients/${PROJECT}/python"
@@ -193,7 +194,7 @@ python () {
   cp "LICENSE" "clients/${PROJECT}/python"
 }
 
-ruby () {
+ruby() {
   echo "Generating Ruby..."
 
   dir="clients/${PROJECT}/ruby"
@@ -213,15 +214,18 @@ ruby () {
 
   file="${dir}/lib/${RUBY_PROJECT_NAME}/version.rb"
 
-  (sed "s/${VERSION}/${GEM_VERSION}/g" < "${file}") > tmp.$$.rb && mv tmp.$$.rb "${file}"
+  (sed "s/${VERSION}/${GEM_VERSION}/g" <"${file}") >tmp.$$.rb && mv tmp.$$.rb "${file}"
 
-  (cd ${dir}; sed "/^end.*/i \  gem 'psych', '~> 4.0.6'" < Gemfile) > tmp.$$.Gemfile && mv tmp.$$.Gemfile "${dir}/Gemfile"
+  (
+    cd ${dir}
+    sed "/^end.*/i \  gem 'psych', '~> 4.0.6'" <Gemfile
+  ) >tmp.$$.Gemfile && mv tmp.$$.Gemfile "${dir}/Gemfile"
 
   cat "${file}"
   cp "LICENSE" "clients/${PROJECT}/ruby"
 }
 
-golang () {
+golang() {
   echo "Generating Golang..."
 
   dir="clients/${PROJECT}/go"
@@ -249,7 +253,7 @@ golang () {
   fi
 }
 
-dotnet () {
+dotnet() {
   echo "Generating dotnet..."
 
   dir="clients/${PROJECT}/dotnet"
@@ -268,7 +272,7 @@ dotnet () {
   cp "LICENSE" "clients/${PROJECT}/dotnet"
 }
 
-dart () {
+dart() {
   echo "Generating Dart..."
 
   dir="clients/${PROJECT}/dart"
@@ -290,7 +294,7 @@ dart () {
   (cd $dir; command dart run build_runner build)
 }
 
-rust () {
+rust() {
   echo "Generating Rust..."
 
   dir="clients/${PROJECT}/rust"
@@ -312,52 +316,74 @@ rust () {
   file="${dir}/Cargo.toml"
 
   if [ $project != "client" ]; then
-    (sed "s/${VERSION}/${RAW_VERSION}"'"\ndescription = "SDK Client for Ory '"${PROJECT_UCF}"'"\ndocumentation = "https:\/\/www.ory.sh\/'"${PROJECT}"'\/docs\/sdk"\nhomepage = "https:\/\/www.ory.sh"\nlicense = "Apache-2.0/g' < "${file}") > tmp.$$.rb && mv tmp.$$.rb "${file}"
+    (sed "s/${VERSION}/${RAW_VERSION}"'"\ndescription = "SDK Client for Ory '"${PROJECT_UCF}"'"\ndocumentation = "https:\/\/www.ory.sh\/'"${PROJECT}"'\/docs\/sdk"\nhomepage = "https:\/\/www.ory.sh"\nlicense = "Apache-2.0/g' <"${file}") >tmp.$$.rb && mv tmp.$$.rb "${file}"
   else
-    (sed "s/${VERSION}/${RAW_VERSION}"'"\ndescription = "SDK Client for Ory"\ndocumentation = "https:\/\/www.ory.sh\/docs\/sdk"\nhomepage = "https:\/\/www.ory.sh"\nlicense = "Apache-2.0/g' < "${file}") > tmp.$$.rb && mv tmp.$$.rb "${file}"
+    (sed "s/${VERSION}/${RAW_VERSION}"'"\ndescription = "SDK Client for Ory"\ndocumentation = "https:\/\/www.ory.sh\/docs\/sdk"\nhomepage = "https:\/\/www.ory.sh"\nlicense = "Apache-2.0/g' <"${file}") >tmp.$$.rb && mv tmp.$$.rb "${file}"
   fi
   cp "LICENSE" "clients/${PROJECT}/rust"
 }
 
-elixir () {
+elixir() {
   echo "Generating Elixir..."
 
   dir="clients/${PROJECT}/elixir"
   rm -rf "$dir" || true
   mkdir -p "$dir"
 
-
   file="${dir}/mix.exs"
 
   # 7.4.0
   openapi-generator-cli version-manager set 7.4.0
   openapi-generator-cli generate -i "${SPEC_FILE}" \
-    	-g elixir \
-	    -o "$dir" \
-	    --git-user-id ory \
-	    --git-repo-id sdk \
-	    --git-host github.com \
-	    -c ./config/client/elixir.yml.proc.yml
+    -g elixir \
+    -o "$dir" \
+    --git-user-id ory \
+    --git-repo-id sdk \
+    --git-host github.com \
+    -c ./config/client/elixir.yml.proc.yml
 
-  (sed "s/licenses:.*$/licenses: [\"Apache-2.0\"],\n      links: %{\n        \"GitHub\" => \"https:\/\/github.com\/ory\/sdk\",\n        \"Website\" => \"https:\/\/www.ory.sh\",\n        \"Documentation\" => \"https:\/\/www.ory.sh\/docs\",\n        \"Product\" => \"https:\/\/console.ory.sh\"\n      }/g" < "${file}") > tmp.$$.exs && mv tmp.$$.exs "${file}"
-  (sed "s/${VERSION}/${RAW_VERSION}/g" < "${file}") > tmp.$$.exs && mv tmp.$$.exs "${file}"
+  (sed "s/licenses:.*$/licenses: [\"Apache-2.0\"],\n      links: %{\n        \"GitHub\" => \"https:\/\/github.com\/ory\/sdk\",\n        \"Website\" => \"https:\/\/www.ory.sh\",\n        \"Documentation\" => \"https:\/\/www.ory.sh\/docs\",\n        \"Product\" => \"https:\/\/console.ory.sh\"\n      }/g" <"${file}") >tmp.$$.exs && mv tmp.$$.exs "${file}"
+  (sed "s/${VERSION}/${RAW_VERSION}/g" <"${file}") >tmp.$$.exs && mv tmp.$$.exs "${file}"
 
   cp "LICENSE" "clients/${PROJECT}/elixir"
 }
 
-# elixir is broken right now: https://github.com/ory/sdk/issues/350
-#elixir
-typescript
-typescript_fetch
-rust
-golang
-java
-php
-python
+generate() {
+  if [ "$(type -t $1)" = "function" ]; then
+    # Did we actually get a function ref?
+    FORCE_VERSION=$2
+    FORCE_PROJECT=$3
+    if [ $FORCE_VERSION = "latest" ]; then
+      FORCE_VERSION=$(cat spec/$FORCE_PROJECT/latest)
+    fi
 
-# ruby is broken right now: https://github.com/ory/sdk/issues/357
-# ruby
-dotnet
-dart
+    init
 
-cleanup
+    $1
+
+    cleanup
+  else
+    echo "$1 is not a valid generator..."
+  fi
+}
+
+if [ $# -lt 3 ]; then
+  # if no parameter is given, just execute all generators, as before.
+  # This is needed by the release pipeline
+  init
+
+  # elixir
+  typescript
+  rust
+  golang
+  java
+  php
+  python
+  # ruby
+  dotnet
+  dart
+
+  cleanup
+else
+  generate $1 $2 $3
+fi
